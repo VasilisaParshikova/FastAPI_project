@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Path, File, UploadFile
 from database import engine, session
-from models import Base
+from models import Base, Tweets, Media
+from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, ApiKey
 
 app = FastAPI()
 
@@ -16,46 +17,51 @@ async def shutdown():
     await session.close()
     await engine.dispose()
 
-@app.post("/api/tweets")
-async def recipes():
-    pass
 
-@app.post("/api/medias")
-async def recipes():
-    pass
-
-@app.delete("/api/tweets/{id}")
-async def recipes():
-    pass
-
-@app.post("/api/tweets/{id}/likes")
-async def recipes():
+@app.post("/api/tweets", response_model=PostAnswer)
+async def tweet_post(tweet: TweetPost):
     pass
 
 
-@app.delete("/api/tweets/{id}/likes")
-async def recipes():
+@app.post("/api/medias", response_model=PostAnswer)
+async def media_post(api_key: ApiKey, file: UploadFile):
     pass
 
-@app.post("/api/users/{id}/follow")
-async def recipes():
-    pass
-
-@app.delete("/api/users/{id}/follow")
-async def recipes():
-    pass
-
-@app.get("/api/tweets")
-async def recipes():
+@app.delete("/api/tweets/{id}", response_model=Answer)
+async def tweet_delete(api_key: ApiKey, id: int = Path(title="Id of the tweet")):
     pass
 
 
-@app.get("/api/users/me")
-async def recipes():
-    pass
-
-@app.get("/api/users/{id}")
-async def recipes():
+@app.post("/api/tweets/{id}/likes", response_model=Answer)
+async def like_tweet(api_key: ApiKey, id: int = Path(title="Id of the tweet")):
     pass
 
 
+@app.delete("/api/tweets/{id}/likes", response_model=Answer)
+async def delete_like(api_key: ApiKey, id: int = Path(title="Id of the tweet")):
+    pass
+
+
+@app.post("/api/users/{id}/follow", response_model=Answer)
+async def follow(api_key: ApiKey, id: int = Path(title="Id of the user")):
+    pass
+
+
+@app.delete("/api/users/{id}/follow", response_model=Answer)
+async def unfollow(api_key: ApiKey, id: int = Path(title="Id of the user")):
+    pass
+
+
+@app.get("/api/tweets", response_model=TweetAnswer)
+async def get_tweets(api_key: ApiKey):
+    pass
+
+
+@app.get("/api/users/me", response_model=UserAnswer)
+async def personal_page(api_key: ApiKey):
+    pass
+
+
+@app.get("/api/users/{id}", response_model=UserAnswer)
+async def user_page(api_key: str, id: int = Path(title="Id of the user")):
+    pass

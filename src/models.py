@@ -41,7 +41,7 @@ class Likes(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("tweet_id", "user_id"),
+        PrimaryKeyConstraint("tweet_id", "user_id"),
     )
 
 
@@ -52,7 +52,7 @@ class Followers(Base):
     follower_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("follower_id", "user_id"),
+        PrimaryKeyConstraint("follower_id", "user_id"),
     )
 
 
