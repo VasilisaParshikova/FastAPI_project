@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Path, File, UploadFile
 from database import engine, session
-from models import Base, Tweets, Media
-from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, ApiKey
+from models import Base, Tweets, Media, Users
+from sqlalchemy.future import select
+from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, ApiKey, User
 
 app = FastAPI()
 
@@ -57,9 +58,12 @@ async def get_tweets(api_key: ApiKey):
     pass
 
 
-@app.get("/api/users/me", response_model=UserAnswer)
+@app.get("/api/users/me", response_model=User)
 async def personal_page(api_key: ApiKey):
-    pass
+    res = await session.execute(select(Users).where(Users.id == 1))
+    res = res.scalars().first()
+    print(res)
+    return res
 
 
 @app.get("/api/users/{id}", response_model=UserAnswer)

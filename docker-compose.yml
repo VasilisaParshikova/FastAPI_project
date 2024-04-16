@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  bd:
+    image: postgres
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_LOG_DESTINATION=stderr
+      - POSTGRES_LOGGING_COLLECTOR=on
+      - POSTGRES_LOG_DIRECTORY=/var/log/postgresql/
+#      - POSTGRES_DB=tweeter
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_log:/var/log/postgresql
+      - ./db/:/var/lib/postgresql/data
+    networks:
+      - web_network
+
+  api:
+    build: ./src
+    volumes:
+      - ./src:/app
+    depends_on:
+      - bd
+    ports:
+      - "8000:8000"
+    networks:
+      - web_network
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./static:/usr/share/nginx/html
+    networks:
+      - web_network
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+networks:
+  web_network:
+    driver: bridge
+volumes:
+  postgres_data:
+  postgres_log:

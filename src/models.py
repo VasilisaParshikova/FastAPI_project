@@ -21,9 +21,9 @@ class Tweets(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String(500), nullable=False)
-    attachments = relationship("Media", backref='tweet_id', lazy='joined', cascade="all")
+    attachments = relationship("Media", backref='tweet', lazy='joined', cascade="all")
     author = Column(Integer, ForeignKey("users.id"), nullable=False)
-    likes = relationship("Likes", backref='tweet_id', lazy='joined', cascade="all")
+    likes = relationship("Likes", backref='tweet', lazy='joined', cascade="all")
 
 
 class Media(Base):
