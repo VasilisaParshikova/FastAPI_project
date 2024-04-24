@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://admin:admin@bd/admin"
+DATABASE_URL = "postgresql+asyncpg://admin:admin@db/admin"
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 

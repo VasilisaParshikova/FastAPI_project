@@ -13,7 +13,7 @@ class Media(BaseModel):
     pass
 
 
-class TweetPost(TweetBase, ApiKey):
+class TweetPost(TweetBase):
     tweet_media_ids: Union[list[int], None] = None
 
 

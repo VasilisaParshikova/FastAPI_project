@@ -1,6 +1,7 @@
 version: '3.8'
 services:
-  bd:
+  db:
+    container_name: db
     image: postgres
     environment:
       - POSTGRES_USER=admin
@@ -19,17 +20,19 @@ services:
       - web_network
 
   api:
+    container_name: api
     build: ./src
     volumes:
       - ./src:/app
     depends_on:
-      - bd
+      - db
     ports:
       - "8000:8000"
     networks:
       - web_network
 
   nginx:
+    container_name: nginx
     image: nginx:alpine
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
