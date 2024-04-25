@@ -1,13 +1,11 @@
 from fastapi import FastAPI, Path, File, UploadFile, Depends
 from database import engine, session
-from models import Base, Tweets, Media, Users, Followers
+from models import Base, Tweets, Media, Users, Followers, Likes
 from sqlalchemy.future import select
-from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, ApiKey, User
-from typing import Callable, Tuple, Annotated, Union
-from functools import wraps
+from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer
+from typing import Annotated, Union
 from fastapi import HTTPException, Header
 from http import HTTPStatus
-from starlette.requests import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import selectinload
 
@@ -42,28 +40,88 @@ async def token_required(api_key: Annotated[Union[str, None], Header()] = None):
         )
     return current_user
 
-@app.post("/api/tweets", response_model=PostAnswer)
-async def tweet_post(tweet: TweetPost):
-    pass
+@app.post("/api/tweets",  dependencies=[Depends(token_required)], response_model=PostAnswer)
+async def tweet_post(tweet: TweetPost, current_user: Users = Depends(token_required)):
+    new_tweet = Tweets(author=current_user.id, content=tweet.content)
+    if tweet.tweet_media_ids:
+        media_objects = await session.execute(
+            select(Media).where(Media.id.in_(tweet.tweet_media_ids))
+        )
+        media_list = media_objects.scalars().all()
+        new_tweet.attachments.extend(media_list)
+    session.add(new_tweet)
+    await session.commit()
+    return {'result': 'true', 'id': new_tweet.id}
 
 
 @app.post("/api/medias", response_model=PostAnswer)
 async def media_post(file: UploadFile):
     pass
 
-@app.delete("/api/tweets/{id}", response_model=Answer)
-async def tweet_delete(id: int = Path(title="Id of the tweet")):
-    pass
+@app.delete("/api/tweets/{id}", dependencies=[Depends(token_required)], response_model=Answer)
+async def tweet_delete(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
+    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
+    tweet = tweet.scalars().first()
+    if tweet is None:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='No such tweet in database.'
+        )
+    if tweet.author != current_user.id:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='You cannot delete tweet of the other user.'
+        )
+    await session.delete(tweet)
+    await session.commit()
+
+    return {'result': 'true'}
 
 
-@app.post("/api/tweets/{id}/likes", response_model=Answer)
-async def like_tweet(id: int = Path(title="Id of the tweet")):
-    pass
+@app.post("/api/tweets/{id}/likes", dependencies=[Depends(token_required)], response_model=Answer)
+async def like_tweet(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
+
+    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
+    tweet = tweet.scalars().first()
+    if tweet is None:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='No such tweet in database.'
+        )
+    like = await session.execute(select(Likes).where(Likes.tweet_id == id, Likes.user_id == current_user.id))
+    like = like.scalars().first()
+    if like:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='You have already liked this tweet.'
+        )
+    new_like = Likes(user_id=current_user.id, tweet_id=id)
+    session.add(new_like)
+    await session.commit()
+
+    return {'result': 'true'}
 
 
-@app.delete("/api/tweets/{id}/likes", response_model=Answer)
-async def delete_likeid(id: int = Path(title="Id of the tweet")):
-    pass
+@app.delete("/api/tweets/{id}/likes", dependencies=[Depends(token_required)], response_model=Answer)
+async def delete_likeid(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
+    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
+    tweet = tweet.scalars().first()
+    if tweet is None:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='No such tweet in database.'
+        )
+    like = await session.execute(select(Likes).where(Likes.tweet_id == id, Likes.user_id == current_user.id))
+    like = like.scalars().first()
+    if not like:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='You have not liked this tweet.'
+        )
+    await session.delete(like)
+    await session.commit()
+
+    return {'result': 'true'}
 
 
 @app.post("/api/users/{id}/follow", dependencies=[Depends(token_required)], response_model=Answer)

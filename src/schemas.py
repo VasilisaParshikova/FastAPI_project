@@ -33,10 +33,6 @@ class Like(BaseModel):
     name: str
 
 
-
-
-
-
 class Answer(BaseModel):
     result: bool
 
