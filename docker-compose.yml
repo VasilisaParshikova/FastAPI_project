@@ -9,7 +9,12 @@ services:
       - POSTGRES_LOG_DESTINATION=stderr
       - POSTGRES_LOGGING_COLLECTOR=on
       - POSTGRES_LOG_DIRECTORY=/var/log/postgresql/
-#      - POSTGRES_DB=tweeter
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d admin -U admin" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
     ports:
       - '5432:5432'
     volumes:
@@ -33,7 +38,7 @@ services:
 
   nginx:
     container_name: nginx
-    image: nginx:alpine
+    build: ./client
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./static:/usr/share/nginx/html
