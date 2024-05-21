@@ -1,24 +1,17 @@
 from pydantic import BaseModel
 from typing import Union
 
-class ApiKey(BaseModel):
-    api_key: str
 
 
 class TweetBase(BaseModel):
     content: str
 
 
-class Media(BaseModel):
-    pass
-
-
-class TweetPost(TweetBase):
+class TweetPost(BaseModel):
+    tweet_data: str
     tweet_media_ids: Union[list[int], None] = None
 
 
-class MediaLink(BaseModel):
-    link: str
 
 
 class User(BaseModel):
@@ -27,6 +20,7 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class Like(BaseModel):
     user_id: int
@@ -40,9 +34,10 @@ class Answer(BaseModel):
 class PostAnswer(Answer):
     id: int
 
+
 class TweetInlist(TweetBase):
     id: int
-    attachments: list[MediaLink] = []
+    attachments: list[str] = []
     author: User
     likes: list[Like] = []
 
@@ -51,10 +46,16 @@ class TweetInlist(TweetBase):
 
 class TweetAnswer(Answer):
     tweets: list[TweetInlist]
+
+
 class UserPage(User):
     followers: list[User]
     following: list[User]
 
+
 class UserAnswer(Answer):
     user: UserPage
 
+
+class MediaAnswer(Answer):
+    media_id: int

@@ -1,13 +1,15 @@
-from fastapi import FastAPI, Path, File, UploadFile, Depends
+from fastapi import FastAPI, Path, File, UploadFile, Depends, Request
 from database import engine, session
 from models import Base, Tweets, Media, Users, Followers, Likes
 from sqlalchemy.future import select
-from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer
+from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
 from typing import Annotated, Union
 from fastapi import HTTPException, Header
 from http import HTTPStatus
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import selectinload
+from pathlib import Path
+from aiofiles import open as aio_open
 
 app = FastAPI()
 
@@ -42,7 +44,7 @@ async def token_required(api_key: Annotated[Union[str, None], Header()] = None):
 
 @app.post("/api/tweets",  dependencies=[Depends(token_required)], response_model=PostAnswer)
 async def tweet_post(tweet: TweetPost, current_user: Users = Depends(token_required)):
-    new_tweet = Tweets(author=current_user.id, content=tweet.content)
+    new_tweet = Tweets(author=current_user.id, content=tweet.tweet_data)
     if tweet.tweet_media_ids:
         media_objects = await session.execute(
             select(Media).where(Media.id.in_(tweet.tweet_media_ids))
@@ -54,9 +56,22 @@ async def tweet_post(tweet: TweetPost, current_user: Users = Depends(token_requi
     return {'result': 'true', 'id': new_tweet.id}
 
 
-@app.post("/api/medias", response_model=PostAnswer)
+@app.post("/api/medias", response_model=MediaAnswer)
 async def media_post(file: UploadFile):
-    pass
+    file_extension = Path(file.filename).suffix
+
+    new_media = Media(extension=file_extension)
+    session.add(new_media)
+    await session.commit()
+
+    file_path = Path("../client/static/images") / (str(new_media.id) + file_extension)
+
+    async with aio_open(file_path, "wb") as f:
+        contents = await file.read()
+        await f.write(contents)
+
+    return {'result': 'true', 'media_id': new_media.id}
+
 
 @app.delete("/api/tweets/{id}", dependencies=[Depends(token_required)], response_model=Answer)
 async def tweet_delete(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
@@ -162,25 +177,27 @@ async def unfollow(id: int = Path(title="Id of the user"), current_user: Users =
 
 
 @app.get("/api/tweets", dependencies=[Depends(token_required)], response_model=TweetAnswer)
-async def get_tweets(current_user: Users = Depends(token_required)):
+async def get_tweets(request: Request, current_user: Users = Depends(token_required)):
     tweets_list = await session.execute(
         select(Tweets).join(Users, Tweets.author == Users.id).
         join(Followers, Followers.user_id == current_user.id).where(Tweets.author == Followers.follower_id).
         options(selectinload(Tweets.attachments), selectinload(Tweets.likes)))
     tweets_list = tweets_list.unique().scalars().all()
     tweets = []
+    base_url = str(request.base_url)[:-3]+'80'
+    print(base_url)
     for tweet in tweets_list:
         author = await session.execute(select(Users).where(Users.id == tweet.author))
         author = author.scalars().first()
         likes_u = []
         for like in tweet.likes:
-            print(like.user_id)
             user_like = await session.execute(select(Users).where(Users.id == like.user_id))
             user_like = user_like.scalars().first()
             likes_u.append({'user_id': user_like.id, 'name': user_like.name})
+
         tweets.append({'id': tweet.id,
                        'content': tweet.content,
-                       'attachment': [str(attachment.id) for attachment in tweet.attachments],
+                       'attachments': [attachment.to_json(base_url)['url'] for attachment in tweet.attachments],
                        'author': author.to_json(),
                        'likes': likes_u})
     result = {'result': 'true', 'tweets': tweets}

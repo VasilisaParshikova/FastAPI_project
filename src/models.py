@@ -1,13 +1,9 @@
 from __future__ import annotations
-import os
 from typing import List
 
 from sqlalchemy.orm import relationship, Mapped
-from libcloud.storage.drivers.local import LocalStorageDriver
-from sqlalchemy_file import File, FileField
-from sqlalchemy_file.storage import StorageManager
 from database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey, PrimaryKeyConstraint, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 
 
@@ -65,15 +61,24 @@ class Tweets(Base):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
+
 class Media(Base):
     __tablename__ = 'media'
 
     id = Column(Integer, primary_key=True)
-    tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=False)
-    content = Column(FileField)
+    extension = Column(String, nullable=True)
+    tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=True)
 
-    def to_json(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+    def to_json(self, base_url: str) -> dict:
+        if self.extension:
+            file_ext = self.extension
+        else:
+            file_ext = 'jpg'
+        return {
+            'image_id': self.id,
+            'tweet_id': self.tweet_id,
+            'url': f"{base_url}/images/{self.id}.{file_ext}"
+        }
 
 
 class Likes(Base):
@@ -90,6 +95,3 @@ class Likes(Base):
 
 
 
-os.makedirs("./upload_dir/attachment", 0o777, exist_ok=True)
-container = LocalStorageDriver("./upload_dir").get_container("attachment")
-StorageManager.add_storage("default", container)
