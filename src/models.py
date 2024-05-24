@@ -69,15 +69,15 @@ class Media(Base):
     extension = Column(String, nullable=True)
     tweet_id = Column(Integer, ForeignKey("tweets.id"), nullable=True)
 
-    def to_json(self, base_url: str) -> dict:
+    def to_json(self) -> dict:
         if self.extension:
             file_ext = self.extension
         else:
-            file_ext = 'jpg'
+            file_ext = '.jpg'
         return {
             'image_id': self.id,
             'tweet_id': self.tweet_id,
-            'url': f"{base_url}/images/{self.id}.{file_ext}"
+            'url': f"/storage/{self.id}{file_ext}"
         }
 
 

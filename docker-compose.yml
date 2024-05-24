@@ -29,6 +29,7 @@ services:
     build: ./src
     volumes:
       - ./src:/app
+      - ./src/storage:/app/storage
     depends_on:
       - db
     ports:
@@ -42,6 +43,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./static:/usr/share/nginx/html
+      - ./src/storage:/app/storage
     networks:
       - web_network
     depends_on:

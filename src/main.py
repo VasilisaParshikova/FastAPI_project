@@ -42,6 +42,16 @@ async def token_required(api_key: Annotated[Union[str, None], Header()] = None):
         )
     return current_user
 
+async def get_tweet(id: int = Path(title="Id of the tweet")):
+    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
+    tweet = tweet.scalars().first()
+    if tweet is None:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='No such tweet in database.'
+        )
+    return tweet
+
 @app.post("/api/tweets",  dependencies=[Depends(token_required)], response_model=PostAnswer)
 async def tweet_post(tweet: TweetPost, current_user: Users = Depends(token_required)):
     new_tweet = Tweets(author=current_user.id, content=tweet.tweet_data)
@@ -64,7 +74,7 @@ async def media_post(file: UploadFile):
     session.add(new_media)
     await session.commit()
 
-    file_path = Path("../client/static/images") / (str(new_media.id) + file_extension)
+    file_path = Path("storage") / (str(new_media.id) + file_extension)
 
     async with aio_open(file_path, "wb") as f:
         contents = await file.read()
@@ -73,15 +83,9 @@ async def media_post(file: UploadFile):
     return {'result': 'true', 'media_id': new_media.id}
 
 
-@app.delete("/api/tweets/{id}", dependencies=[Depends(token_required)], response_model=Answer)
-async def tweet_delete(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
-    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
-    tweet = tweet.scalars().first()
-    if tweet is None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='No such tweet in database.'
-        )
+@app.delete("/api/tweets/{id}", dependencies=[Depends(token_required), Depends(get_tweet)], response_model=Answer)
+async def tweet_delete(current_user: Users = Depends(token_required), tweet: Tweets = Depends(get_tweet)):
+
     if tweet.author != current_user.id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
@@ -93,16 +97,10 @@ async def tweet_delete(id: int = Path(title="Id of the tweet"), current_user: Us
     return {'result': 'true'}
 
 
-@app.post("/api/tweets/{id}/likes", dependencies=[Depends(token_required)], response_model=Answer)
+@app.post("/api/tweets/{id}/likes", dependencies=[Depends(token_required), Depends(get_tweet)], response_model=Answer)
 async def like_tweet(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
 
-    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
-    tweet = tweet.scalars().first()
-    if tweet is None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='No such tweet in database.'
-        )
+
     like = await session.execute(select(Likes).where(Likes.tweet_id == id, Likes.user_id == current_user.id))
     like = like.scalars().first()
     if like:
@@ -117,15 +115,9 @@ async def like_tweet(id: int = Path(title="Id of the tweet"), current_user: User
     return {'result': 'true'}
 
 
-@app.delete("/api/tweets/{id}/likes", dependencies=[Depends(token_required)], response_model=Answer)
+@app.delete("/api/tweets/{id}/likes", dependencies=[Depends(token_required), Depends(get_tweet)], response_model=Answer)
 async def delete_likeid(id: int = Path(title="Id of the tweet"), current_user: Users = Depends(token_required)):
-    tweet = await session.execute(select(Tweets).where(Tweets.id == id))
-    tweet = tweet.scalars().first()
-    if tweet is None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='No such tweet in database.'
-        )
+
     like = await session.execute(select(Likes).where(Likes.tweet_id == id, Likes.user_id == current_user.id))
     like = like.scalars().first()
     if not like:
@@ -177,15 +169,13 @@ async def unfollow(id: int = Path(title="Id of the user"), current_user: Users =
 
 
 @app.get("/api/tweets", dependencies=[Depends(token_required)], response_model=TweetAnswer)
-async def get_tweets(request: Request, current_user: Users = Depends(token_required)):
+async def get_tweets(current_user: Users = Depends(token_required)):
     tweets_list = await session.execute(
         select(Tweets).join(Users, Tweets.author == Users.id).
         join(Followers, Followers.user_id == current_user.id).where(Tweets.author == Followers.follower_id).
         options(selectinload(Tweets.attachments), selectinload(Tweets.likes)))
     tweets_list = tweets_list.unique().scalars().all()
     tweets = []
-    base_url = str(request.base_url)[:-3]+'80'
-    print(base_url)
     for tweet in tweets_list:
         author = await session.execute(select(Users).where(Users.id == tweet.author))
         author = author.scalars().first()
@@ -197,7 +187,7 @@ async def get_tweets(request: Request, current_user: Users = Depends(token_requi
 
         tweets.append({'id': tweet.id,
                        'content': tweet.content,
-                       'attachments': [attachment.to_json(base_url)['url'] for attachment in tweet.attachments],
+                       'attachments': [attachment.to_json()['url'] for attachment in tweet.attachments],
                        'author': author.to_json(),
                        'likes': likes_u})
     result = {'result': 'true', 'tweets': tweets}
