@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Union
 
 
-
 class TweetBase(BaseModel):
     content: str
 
@@ -10,8 +9,6 @@ class TweetBase(BaseModel):
 class TweetPost(BaseModel):
     tweet_data: str
     tweet_media_ids: Union[list[int], None] = None
-
-
 
 
 class User(BaseModel):
@@ -43,6 +40,7 @@ class TweetInlist(TweetBase):
 
     class Config:
         orm_mode = True
+
 
 class TweetAnswer(Answer):
     tweets: list[TweetInlist]
