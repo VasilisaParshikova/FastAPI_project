@@ -1,5 +1,5 @@
-from database import session
-from models import Tweets, Media, Users, Followers, Likes
+from .database import session
+from .models import Tweets, Media, Users, Followers, Likes
 from sqlalchemy.future import select
 from typing import List
 from sqlalchemy.orm import selectinload

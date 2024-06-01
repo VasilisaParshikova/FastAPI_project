@@ -1,14 +1,14 @@
 from fastapi import FastAPI, Path, UploadFile, Depends
-from database import engine, session
-from models import Base, Tweets, Media, Users, Followers, Likes
-from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
+from .database import engine, session
+from .models import Base, Tweets, Media, Users, Followers, Likes
+from .schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
 from typing import Annotated, Union
 from fastapi import HTTPException, Header
 from http import HTTPStatus
 from fastapi.responses import JSONResponse
 from pathlib import Path as Path_l
 from aiofiles import open as aio_open
-from db_services import (
+from .db_services import (
     UserService,
     TweetService,
     MediaService,

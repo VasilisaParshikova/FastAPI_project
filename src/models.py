@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List
 
 from sqlalchemy.orm import relationship, Mapped
-from database import Base
+from .database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 
