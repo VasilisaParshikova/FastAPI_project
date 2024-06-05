@@ -4,8 +4,20 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.ext.declarative import declarative_base
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql+asyncpg://admin:admin@db/admin"
+load_dotenv()
+def get_database_url():
+    if os.environ.get("ENV") == "test":
+        return os.getenv("DATABASE_URL_TEST")
+    elif os.environ.get("ENV") == "debug":
+        return os.getenv("DATABASE_URL_DEBUG")
+    else:
+        return os.getenv("DATABASE_URL")
+
+
+DATABASE_URL = get_database_url()
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 

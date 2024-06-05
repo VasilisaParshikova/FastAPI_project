@@ -2,61 +2,51 @@ import factory
 from factory.alchemy import SQLAlchemyModelFactory
 from src.models import Users, Tweets, Media, Followers, Likes
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.main import session
 
 
-class AsyncSQLAlchemyModelFactory(SQLAlchemyModelFactory):
-    class Meta:
-        abstract = True
-
-    @classmethod
-    async def _create(cls, model_class, *args, **kwargs):
-        async with cls._meta.sqlalchemy_session() as session:
-            obj = model_class(*args, **kwargs)
-            session.add(obj)
-            await session.commit()
-            return obj
 
 
-class UserFactory(AsyncSQLAlchemyModelFactory):
+class UserFactory(SQLAlchemyModelFactory):
     class Meta:
         model = Users
-        sqlalchemy_session = AsyncSession
+        sqlalchemy_session = session
 
     name = factory.Sequence(lambda n: f'User {n}')
     api_key = factory.Faker('uuid4')
 
 
-class TweetFactory(AsyncSQLAlchemyModelFactory):
+class TweetFactory(SQLAlchemyModelFactory):
     class Meta:
         model = Tweets
-        sqlalchemy_session = AsyncSession
+        sqlalchemy_session = session
 
     content = factory.Faker('text', max_nb_chars=500)
     author = factory.SubFactory(UserFactory)
 
 
-class MediaFactory(AsyncSQLAlchemyModelFactory):
+class MediaFactory(SQLAlchemyModelFactory):
     class Meta:
         model = Media
-        sqlalchemy_session = AsyncSession
+        sqlalchemy_session = session
 
-    tweet_id = factory.SubFactory(TweetFactory)
+    extension = '.jpg'
 
 
-class FollowersFactory(AsyncSQLAlchemyModelFactory):
 
+class FollowersFactory(SQLAlchemyModelFactory):
     class Meta:
         model = Followers
-        sqlalchemy_session = AsyncSession
+        sqlalchemy_session = session
 
     user_id = factory.SubFactory(UserFactory)
     follower_id = factory.SubFactory(UserFactory)
 
 
-class LikesFactory(AsyncSQLAlchemyModelFactory):
+class LikesFactory(SQLAlchemyModelFactory):
     class Meta:
         model = Likes
-        sqlalchemy_session = AsyncSession
+        sqlalchemy_session = session
 
     user_id = factory.SubFactory(UserFactory)
     tweet_id = factory.SubFactory(TweetFactory)

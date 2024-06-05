@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI, Path, UploadFile, Depends
 from .database import engine, session
 from .models import Base, Tweets, Media, Users, Followers, Likes
@@ -15,6 +16,8 @@ from .db_services import (
     LikesService,
     FollowersService,
 )
+
+
 
 app = FastAPI()
 
