@@ -21,7 +21,7 @@ class TweetFactory(SQLAlchemyModelFactory):
         model = Tweets
         sqlalchemy_session = session
 
-    content = factory.Faker('text', max_nb_chars=500)
+    content = factory.Faker('text', max_nb_chars=50)
     author = factory.SubFactory(UserFactory)
 
 
