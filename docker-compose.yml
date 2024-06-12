@@ -29,6 +29,8 @@ services:
     build:
       context: ./
       dockerfile: ./src/dockerfile
+    env_file:
+      - .env
     volumes:
       - ./src:/src
       - ./src/storage:/src/storage

@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./src .
 
-COPY ./.env .
+#COPY ./.env .
 
 RUN mkdir -p /storage
 
