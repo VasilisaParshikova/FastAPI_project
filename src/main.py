@@ -1,23 +1,20 @@
-from dotenv import load_dotenv
 from fastapi import FastAPI, Path, UploadFile, Depends
-from .database import engine, session
-from .models import Base, Tweets, Media, Users, Followers, Likes
-from .schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
+from database import engine, session
+from models import Base, Tweets, Media, Users, Followers, Likes
+from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
 from typing import Annotated, Union
 from fastapi import HTTPException, Header
 from http import HTTPStatus
 from fastapi.responses import JSONResponse
 from pathlib import Path as Path_l
 from aiofiles import open as aio_open
-from .db_services import (
+from db_services import (
     UserService,
     TweetService,
     MediaService,
     LikesService,
     FollowersService,
 )
-
-
 
 app = FastAPI()
 
@@ -83,6 +80,9 @@ async def media_post(file: UploadFile):
 
     file_path = Path_l("storage") / (str(new_media.id) + file_extension)
 
+    if not file_path.parent.exists():
+        file_path.parent.mkdir(parents=True)
+
     async with aio_open(file_path, "wb") as f:
         contents = await file.read()
         await f.write(contents)
@@ -96,7 +96,7 @@ async def media_post(file: UploadFile):
     response_model=Answer,
 )
 async def tweet_delete(
-    current_user: Users = Depends(token_required), tweet: Tweets = Depends(get_tweet)
+        current_user: Users = Depends(token_required), tweet: Tweets = Depends(get_tweet)
 ):
     if tweet.author != current_user.id:
         raise HTTPException(
@@ -115,8 +115,8 @@ async def tweet_delete(
     response_model=Answer,
 )
 async def like_tweet(
-    id: int = Path(title="Id of the tweet"),
-    current_user: Users = Depends(token_required),
+        id: int = Path(title="Id of the tweet"),
+        current_user: Users = Depends(token_required),
 ):
     like = await LikesService.get_like(id, current_user.id)
     if like:
@@ -137,8 +137,8 @@ async def like_tweet(
     response_model=Answer,
 )
 async def delete_likeid(
-    id: int = Path(title="Id of the tweet"),
-    current_user: Users = Depends(token_required),
+        id: int = Path(title="Id of the tweet"),
+        current_user: Users = Depends(token_required),
 ):
     like = await LikesService.get_like(id, current_user.id)
     if not like:
@@ -157,8 +157,8 @@ async def delete_likeid(
     response_model=Answer,
 )
 async def follow(
-    id: int = Path(title="Id of the user"),
-    current_user: Users = Depends(token_required),
+        id: int = Path(title="Id of the user"),
+        current_user: Users = Depends(token_required),
 ):
     if current_user.id == id:
         raise HTTPException(
@@ -185,8 +185,8 @@ async def follow(
     response_model=Answer,
 )
 async def unfollow(
-    id: int = Path(title="Id of the user"),
-    current_user: Users = Depends(token_required),
+        id: int = Path(title="Id of the user"),
+        current_user: Users = Depends(token_required),
 ):
     check_follow = await FollowersService.get_follow(current_user.id, id)
     if check_follow is None:

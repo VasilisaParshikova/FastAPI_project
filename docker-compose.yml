@@ -26,16 +26,19 @@ services:
 
   api:
     container_name: api
-    build: ./src
+    build:
+      context: ./
+      dockerfile: ./src/dockerfile
     volumes:
-      - ./src:/app
-      - ./src/storage:/app/storage
+      - ./src:/src
+      - ./src/storage:/src/storage
     depends_on:
       - db
     ports:
       - "8000:8000"
     networks:
       - web_network
+
 
   nginx:
     container_name: nginx

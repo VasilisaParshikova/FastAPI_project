@@ -1,12 +1,14 @@
 FROM python:3.9
 
-WORKDIR /app
+WORKDIR /src
 
-COPY requirements.txt ./
+COPY src/requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY ./src .
+
+COPY ./.env .
 
 RUN mkdir -p /storage
 

@@ -8,13 +8,22 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
 def get_database_url():
+    print('_________________________________')
+    print(os.environ.get("ENV"))
     if os.environ.get("ENV") == "test":
+        print('test')
         return os.getenv("DATABASE_URL_TEST")
     elif os.environ.get("ENV") == "debug":
+        print('debug')
         return os.getenv("DATABASE_URL_DEBUG")
     else:
+        print('prod')
+        print(os.getenv("DATABASE_URL"))
         return os.getenv("DATABASE_URL")
+
 
 
 DATABASE_URL = get_database_url()
