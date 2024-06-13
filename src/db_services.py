@@ -1,8 +1,19 @@
-from database import session
-from models import Tweets, Media, Users, Followers, Likes
 from sqlalchemy.future import select
 from typing import List
 from sqlalchemy.orm import selectinload
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+print('_________________________________')
+print(os.environ.get("ENV"))
+if os.environ.get("ENV") == "test":
+    print('test')
+    from .database import session
+    from .models import Tweets, Media, Users, Followers, Likes
+else:
+    from database import session
+    from models import Tweets, Media, Users, Followers, Likes
 
 
 class UserService:

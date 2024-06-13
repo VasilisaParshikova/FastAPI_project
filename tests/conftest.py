@@ -21,7 +21,7 @@ async def init_db():
     session = async_session_maker()
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    engine_test.dispose()
+    await engine_test.dispose()
     yield
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)

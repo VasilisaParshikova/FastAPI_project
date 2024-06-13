@@ -1,11 +1,18 @@
 from __future__ import annotations
 from typing import List
-
+import os
+from dotenv import load_dotenv
 from sqlalchemy.orm import relationship, Mapped
-from database import Base
 from sqlalchemy import Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
-
+load_dotenv()
+print('_________________________________')
+print(os.environ.get("ENV"))
+if os.environ.get("ENV") == "test":
+    print('test')
+    from .database import Base
+else:
+    from database import Base
 
 class Followers(Base):
     __tablename__ = "followers"
