@@ -5,10 +5,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-print('_________________________________')
-print(os.environ.get("ENV"))
+
 if os.environ.get("ENV") == "test":
-    print('test')
     from .database import session
     from .models import Tweets, Media, Users, Followers, Likes
 else:

@@ -6,10 +6,8 @@ from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy import Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 load_dotenv()
-print('_________________________________')
-print(os.environ.get("ENV"))
+
 if os.environ.get("ENV") == "test":
-    print('test')
     from .database import Base
 else:
     from database import Base

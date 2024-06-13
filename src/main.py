@@ -10,10 +10,8 @@ from aiofiles import open as aio_open
 
 
 load_dotenv()
-print('_________________________________')
-print(os.environ.get("ENV"))
+
 if os.environ.get("ENV") == "test":
-    print('test')
     from .database import engine, session
     from .models import Base, Tweets, Media, Users, Followers, Likes
     from .schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
