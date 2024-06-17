@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 
 
 @pytest.mark.asyncio
-async def test_create_media(ac: AsyncClient, init_db):
+async def test_create_media(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     session.add(test_user)
     await session.commit()
@@ -21,7 +21,7 @@ async def test_create_media(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_post_tweet(ac: AsyncClient, init_db):
+async def test_post_tweet(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_media = MediaFactory.create()
     session.add(test_user)
@@ -38,7 +38,7 @@ async def test_post_tweet(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_tweet_delete(ac: AsyncClient, init_db):
+async def test_tweet_delete(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     session.add(test_user)
     await session.commit()
@@ -54,7 +54,7 @@ async def test_tweet_delete(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_like_post(ac: AsyncClient, init_db):
+async def test_like_post(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     session.add(test_user)
@@ -77,7 +77,7 @@ async def test_like_post(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_like_delete(ac: AsyncClient, init_db):
+async def test_like_delete(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     session.add(test_user)
@@ -95,7 +95,7 @@ async def test_like_delete(ac: AsyncClient, init_db):
     like = like.scalars().all()
     assert len(like) == 1
     headers = {"api-key": test_user.api_key}
-    response = await ac.delete(f"/api/tweets/{test_tweet.id}/likes", headers=headers)
+    response = await ac.delete(f"/api/users/{test_tweet.id}/likes", headers=headers)
 
     assert response.status_code == 200
     assert response.json()['result']
@@ -107,7 +107,7 @@ async def test_like_delete(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_follow_post(ac: AsyncClient, init_db):
+async def test_follow_post(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     session.add(test_user)
@@ -125,7 +125,7 @@ async def test_follow_post(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_follow_delete(ac: AsyncClient, init_db):
+async def test_follow_delete(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     session.add(test_user)
@@ -138,7 +138,7 @@ async def test_follow_delete(ac: AsyncClient, init_db):
     follow = follow.scalars().all()
     assert len(follow) == 1
     headers = {"api-key": test_user.api_key}
-    response = await ac.delete(f"/api/users/{test_user2.id}/follow", headers=headers)
+    response = await ac.delete(f"/api/tweets/{test_user2.id}/follow", headers=headers)
 
     assert response.status_code == 200
     assert response.json()['result']
@@ -148,7 +148,7 @@ async def test_follow_delete(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_tweets_get(ac: AsyncClient, init_db):
+async def test_tweets_get(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     test_user3 = UserFactory.create()
@@ -174,7 +174,7 @@ async def test_tweets_get(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_personal_page_get(ac: AsyncClient, init_db):
+async def test_personal_page_get(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     test_user3 = UserFactory.create()
@@ -200,7 +200,7 @@ async def test_personal_page_get(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_user_page_get(ac: AsyncClient, init_db):
+async def test_user_page_get(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
     test_user2 = UserFactory.create()
     test_user3 = UserFactory.create()
@@ -226,7 +226,7 @@ async def test_user_page_get(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_user_page_get_error(ac: AsyncClient, init_db):
+async def test_user_page_get_error(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
 
     await session.commit()
@@ -237,7 +237,7 @@ async def test_user_page_get_error(ac: AsyncClient, init_db):
 
 
 @pytest.mark.asyncio
-async def test_user_page_get_error_wrong_api_key(ac: AsyncClient, init_db):
+async def test_user_page_get_error_wrong_api_key(ac: AsyncClient, init_db, logger):
     test_user = UserFactory.create()
 
     await session.commit()

@@ -34,6 +34,7 @@ services:
     volumes:
       - ./src:/src
       - ./src/storage:/src/storage
+      - ./src/log:/src/log
     depends_on:
       - db
     ports:

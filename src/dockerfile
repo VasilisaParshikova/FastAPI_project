@@ -8,8 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./src .
 
-#COPY ./.env .
-
 RUN mkdir -p /storage
+
+RUN mkdir -p /log
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

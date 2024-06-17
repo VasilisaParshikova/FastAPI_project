@@ -10,8 +10,9 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 os.environ["ENV"] = "test"
-from src.main import app
+from src.main import app, initialize_logger, shutdown_logger
 from src.models import Base
+
 
 
 @pytest.fixture(scope='session')
@@ -42,3 +43,10 @@ client = TestClient(app)
 async def ac() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
+
+
+@pytest.fixture(scope='session')
+async def logger():
+    await initialize_logger()
+    yield
+    await shutdown_logger()
