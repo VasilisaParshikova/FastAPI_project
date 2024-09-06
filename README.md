@@ -4,7 +4,7 @@
 # Установка
 ### Склонировать репозиторий
 
-- `git clone https://gitlab.skillbox.ru/vasilisa_parshikova/python_advanced_diploma.git`
+- `git clone https://github.com/VasilisaParshikova/FastAPI_project`
 
 ### Настройка окружения
 
