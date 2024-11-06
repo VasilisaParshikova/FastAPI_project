@@ -6,12 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-if os.environ.get("ENV") == "test":
-    from .database import session
-    from .models import Tweets, Media, Users, Followers, Likes
-else:
-    from database import session
-    from models import Tweets, Media, Users, Followers, Likes
+from src.database import session
+from src.models import Tweets, Media, Users, Followers, Likes
 
 
 class UserService:

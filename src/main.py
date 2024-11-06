@@ -1,6 +1,5 @@
 import os
 
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, Path, UploadFile, Depends, Request
 from typing import Annotated, Union
@@ -10,34 +9,19 @@ from fastapi.responses import JSONResponse
 from pathlib import Path as Path_l
 from aiofiles import open as aio_open
 
-
 load_dotenv()
 
-if os.environ.get("ENV") == "test":
-    from .database import engine, session
-    from .models import Base, Tweets, Media, Users, Followers, Likes
-    from .schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
-    from .logging_config import get_logger
-    from .db_services import (
-        UserService,
-        TweetService,
-        MediaService,
-        LikesService,
-        FollowersService,
-    )
-
-else:
-    from database import engine, session
-    from models import Base, Tweets, Media, Users, Followers, Likes
-    from schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
-    from logging_config import get_logger
-    from db_services import (
-        UserService,
-        TweetService,
-        MediaService,
-        LikesService,
-        FollowersService,
-    )
+from src.database import engine, session
+from src.models import Base, Tweets, Media, Users, Followers, Likes
+from src.schemas import TweetPost, TweetAnswer, PostAnswer, Answer, UserAnswer, MediaAnswer
+from src.logging_config import get_logger
+from src.db_services import (
+    UserService,
+    TweetService,
+    MediaService,
+    LikesService,
+    FollowersService,
+)
 
 app = FastAPI()
 logger = None
@@ -252,7 +236,6 @@ async def unfollow(
     await logger.debug(f"User {current_user} has unfollowed user id = {id}")
 
     return {"result": "true"}
-
 
 
 @app.get(

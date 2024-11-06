@@ -28,7 +28,7 @@ services:
     container_name: api
     build:
       context: ./
-      dockerfile: ./src/dockerfile
+      dockerfile: ./dockerfile
     env_file:
       - .env
     volumes:

@@ -5,12 +5,11 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy import Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
+
 load_dotenv()
 
-if os.environ.get("ENV") == "test":
-    from .database import Base
-else:
-    from database import Base
+from src.database import Base
+
 
 class Followers(Base):
     __tablename__ = "followers"
